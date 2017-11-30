@@ -1,5 +1,5 @@
 {
-  "name": "autodeploy",
+  "name": "gitlab-autodeploy",
   "version": "0.1.0",
   "description": "Autodeploy utility",
   "main": "index.js",
