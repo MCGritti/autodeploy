@@ -10,12 +10,15 @@ ad.configServer({
 
 ad.listen()
 
-ad.on('core', (done) => {
+ad.on('core', (payload, done) => {
   console.log('Core reached')
-  setTimeout(done, 5000)
+  console.log('Received --------')
+  console.log(payload)
+  console.log('-----------------')
+  setTimeout(done, 10000)
 })
 
-ad.on('vue', (done) => {
+ad.on('vue', (payload, done) => {
   console.log('Vue reached')
-  setTimeout(done, 5000)
+  setTimeout(done, 10000)
 })

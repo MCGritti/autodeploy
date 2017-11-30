@@ -18,10 +18,23 @@ const server = {
   }
 }
 
+const logCfg = {
+  enabled: false,
+  prefix: '',
+  suffix: ''
+}
+
+const log = (msg) => {
+  if (logCfg) {
+    let _msg = [logCfg.prefix, msg, logCfg.suffix]
+    console.log(_msg.join(''))
+  }
+}
+
 const events = [{
   name: 'ad_status',
   callback: (message, data) => {
-    console.log('Received ' + data.dir)
+    log('Received message from client running in ' + data.dir)
     message.reply({
       busy: isBusy()
     })
@@ -51,7 +64,8 @@ const findRepoEntryById = (id) => {
 const on = (id, callback) => {
   repoList.push({
     id,
-    callback
+    callback,
+    payloads: []
   })
 }
 
@@ -84,7 +98,10 @@ const isBusy = () => {
 }
 
 const doCallback = (repoReg) => {
-  repoReg.callback(() => removeFromBusyQueue(repoReg.id))
+  repoReg.callback(repoReg.payloads[0], () => {
+    removeFromBusyQueue(repoReg.id)
+    repoReg.payloads.splice(0, 1)
+  })
 }
 
 const configServer = (obj) => {
@@ -96,11 +113,11 @@ const configClient = (obj) => {
 }
 
 const postCallback = (req, res) => {
-  console.log(req.body)
   let repository = (req.body.project) ? req.body.project.name || null : null
   let repoReg = findRepoEntryById(repository)
-  console.log(repoReg)
   if (repoReg.callback) {
+    let payload = req.body
+    repoReg.payloads.push(payload)
     if (!busyQueueContains(repository)) doCallback(repoReg)
     busyQueue.push(repository)
   }
