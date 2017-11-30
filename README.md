@@ -1,2 +1,2 @@
-# autodeploy
-Autodeploy utils for express
+# gitlab-autodeploy
+Handle gitlab post requests easier.

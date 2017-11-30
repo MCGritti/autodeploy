@@ -14,7 +14,8 @@ const server = {
     expressPostUrl: '/',
     expressPort: 8000,
     tcpPort: 9000,
-    useHttps: false
+    useHttps: false,
+    secretToken: ''
   }
 }
 
@@ -112,14 +113,25 @@ const configClient = (obj) => {
   Object.assign(client.config, obj)
 }
 
+const getRepositoryName = (req) => {
+  // TODO: Check other fields?
+  let repoName = (req.body.project) ? req.body.project.name || null : null
+  return repoName
+}
+
+const isTokenValid = (req) => {
+  let secretToken = req.headers['x-gitlab-token'] || ''
+  return (secretToken === server.config.secretToken)
+}
+
 const postCallback = (req, res) => {
-  let repository = (req.body.project) ? req.body.project.name || null : null
-  let repoReg = findRepoEntryById(repository)
-  if (repoReg.callback) {
+  let repoName = getRepositoryName(req)
+  let repoReg = findRepoEntryById(repoName)
+  if (repoReg.callback && isTokenValid(req)) {
     let payload = req.body
     repoReg.payloads.push(payload)
-    if (!busyQueueContains(repository)) doCallback(repoReg)
-    busyQueue.push(repository)
+    if (!busyQueueContains(repoName)) doCallback(repoReg)
+    busyQueue.push(repoName)
   }
   res.send({
     busyQueue,
