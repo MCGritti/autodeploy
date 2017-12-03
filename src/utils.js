@@ -2,30 +2,65 @@ const util = require('util')
 const exec = util.promisify(require('child_process').exec)
 
 const execOn = async (path, cmd, prefix) => {
-  if (prefix) return await exec(`${prefix} cd ${path} && ${cmd}`)
-  return await exec(`cd ${path} && ${cmd}`)
+  let retval = null
+  try {
+    if (prefix) return await exec(`${prefix} cd ${path} && ${cmd}`)
+    retval = await exec(`cd ${path} && ${cmd}`)
+  } catch(e) {
+    console.log('Error: ' + e)
+  }
+  return retval
 }
 
 const ls = async (path) => {
-  const { stdout } = await execOn(path, 'ls .')
-  return stdout
+  let retval = null
+  try {
+    const { stdout, stderr } = await execOn(path, 'ls .')
+    retval = stdout
+  } catch(e) {
+    console.log('Error: ' + e)
+    retval = stderr
+  }
+  return retval
 }
 
 const repositoryIsUpdated = async (path) => {
-  await execOn(path, 'git fetch')
-  const { stdout } = await execOn(path, 'git status -uno')
-  const pattern = /Your branch is up to date with/
-  return (stdout.match(pattern)) ? true : false
+  let retval = null
+  try {
+    await execOn(path, 'git fetch')
+    const { stdout } = await execOn(path, 'git status -uno')
+    const pattern = /Your branch is up to date with/
+    retval = (stdout.match(pattern)) ? true : false
+  } catch(e) {
+    console.log('Error: ' + e)
+  }
+  return retval
 }
 
 const pull = async (path) => {
-  const { stdout } = await execOn(path, 'git pull')
-  // TODO: Pull fail treatment (maybe stash?)
+  try {
+    const { stdout } = await execOn(path, 'git pull')
+  } catch(e) {
+    console.log('Error: ' + e)
+  }
+}
+
+const stash = async (path) => {
+  try {
+    const { stdout } = await execOn(path, 'git stash')
+  } catch(e) {
+    console.log('Error: ' + e)
+  }
 }
 
 const installPackages = async (path, prefix) => {
-  if (prefix) return await execOn(path, 'npm i', prefix)
-  return await execOn(path, 'npm i')
+  let retval = null
+  try {
+    retval = (prefix) ? await execOn(path, 'npm i', prefix) : await execOn(path, 'npm i')
+  } catch(e) {
+    console.log('Error: ' + e)
+  }
+  return retval
 }
 
 const test = async (path, testCmd, testPredicate) => {
