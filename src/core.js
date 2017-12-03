@@ -26,16 +26,22 @@ const logCfg = {
 }
 
 const log = (msg) => {
-  if (logCfg) {
+  if (logCfg.enabled) {
     let _msg = [logCfg.prefix, msg, logCfg.suffix]
     console.log(_msg.join(''))
   }
 }
 
+const enableLogging = (prefix, suffix) => {
+  logCfg.enable = true
+  logCfg.prefix = (prefix) ? prefix : 'Log: '
+  logCfg.suffix = (suffix) ? suffix : ''
+}
+
 const events = [{
   name: 'ad_status',
   callback: (message, data) => {
-    log('isBusy() === ' + isBusy())
+    log('isBusy ? ' + isBusy())
     message.reply({
       busy: isBusy()
     })
@@ -49,10 +55,7 @@ const client = {
   tcpInstance: null,
   config: {
     tcpPort: 9000,
-    timeout: 1000,
-    busyRoute: (req, res, next) => {
-      res.send('There are incomming updates. Please wait.')
-    }
+    timeout: 1000
   }
 }
 
@@ -146,6 +149,7 @@ const createTcpServer = () => {
   events.map(event => {
     server.tcpInstance.on(event.name, event.callback)
   })
+  console.log('TCP server listening on port ' + server.config.tcpPort)
 }
 
 const createExpressServer = () => {
@@ -183,9 +187,21 @@ const listen = () => {
   createExpressServer()
 }
 
-const createClientRoute = (busyRoute) => {
-  let defaultRoute = (busyRoute) ? busyRoute : client.config.busyRoute
-  if (!client.tcpInstance) client.tcpInstance = messenger.createSpeaker(client.config.tcpPort)
+const defaultBusyRoute = (req, res, next) => {
+  res.send('There are incomming updates. Please wait.')
+}
+
+const defaultOkRoute = (req, res, next) => {
+  next()
+}
+
+const createClientRoute = (busyCallback, okCallback) => {
+  let busyRoute = (busyCallback) ? busyCallback : defaultBusyRoute
+  let okRoute = (okCallback) ? okCallback : defaultOkRoute
+  if (!client.tcpInstance) {
+    client.tcpInstance = messenger.createSpeaker(client.config.tcpPort)
+    console.log('TCP client running on port ' + client.config.tcpPort)
+  }
   return (req, res, next) => {
     new Promise((resolve, reject) => {
         client.tcpInstance.request('ad_status', { dir: __dirname },
@@ -195,9 +211,9 @@ const createClientRoute = (busyRoute) => {
       })
       .then(data => {
         if (data.busy) {
-          defaultRoute(req, res, next)
+          busyRoute(req, res, next)
         } else {
-          next()
+          okRoute(req, res, next)
         }
       })
   }
@@ -205,6 +221,7 @@ const createClientRoute = (busyRoute) => {
 
 module.exports = {
   createClientRoute,
+  enableLogging,
   configClient,
   configServer,
   listen,

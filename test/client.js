@@ -10,10 +10,16 @@ const bodyParser = require('body-parser')
 const ad = require('../index')
 
 ad.configClient({
-  tcpPort: 9000
+  tcpPort: 9000,
+  timeout: 5000
 })
 
-const adclient = ad.createClientRoute()
+const adclient = ad.createClientRoute((req, res, next) => {
+  res.send('Updating')
+}, (req, res, next) => {
+  console.log('Thats ok!!!')
+  next()
+})
 
 app.use(bodyParser.urlencoded({
   extended: true
@@ -21,11 +27,6 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(adclient)
-app.use((req, res, next) => {
-  console.log('Im here')
-  next()
-  // next()
-})
 app.get('/', (req, res) => {
   res.send('Hello, world.')
 })
