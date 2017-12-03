@@ -49,6 +49,7 @@ const client = {
   tcpInstance: null,
   config: {
     tcpPort: 9000,
+    timeout: 1000,
     busyRoute: (req, res, next) => {
       res.send('There are incomming updates. Please wait.')
     }
@@ -182,18 +183,19 @@ const listen = () => {
   createExpressServer()
 }
 
-const createClientRoute = () => {
+const createClientRoute = (busyRoute) => {
+  let defaultRoute = (busyRoute) ? busyRoute : client.config.busyRoute
   if (!client.tcpInstance) client.tcpInstance = messenger.createSpeaker(client.config.tcpPort)
   return (req, res, next) => {
     new Promise((resolve, reject) => {
         client.tcpInstance.request('ad_status', { dir: __dirname },
           data => {
             resolve(data)
-          }, 500)
+          }, client.config.timeout)
       })
       .then(data => {
         if (data.busy) {
-          client.config.busyRoute(req, res, next)
+          defaultRoute(req, res, next)
         } else {
           next()
         }
