@@ -33,7 +33,7 @@ const log = (msg) => {
 }
 
 const enableLogging = (prefix, suffix) => {
-  logCfg.enable = true
+  logCfg.enabled = true
   logCfg.prefix = (prefix) ? prefix : 'Log: '
   logCfg.suffix = (suffix) ? suffix : ''
 }
@@ -204,6 +204,7 @@ const createClientRoute = (busyCallback, okCallback) => {
   }
   return (req, res, next) => {
     new Promise((resolve, reject) => {
+        log('Requesting ad_status from autodeploy server')
         client.tcpInstance.request('ad_status', { dir: __dirname },
           data => {
             resolve(data)
