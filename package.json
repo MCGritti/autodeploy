@@ -1,6 +1,6 @@
 {
   "name": "gitlab-autodeploy",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Autodeploy utility",
   "main": "index.js",
   "scripts": {

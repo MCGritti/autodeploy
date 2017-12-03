@@ -35,7 +35,7 @@ const log = (msg) => {
 const events = [{
   name: 'ad_status',
   callback: (message, data) => {
-    log('Received message from client running in ' + data.dir)
+    log('isBusy() === ' + isBusy())
     message.reply({
       busy: isBusy()
     })
@@ -189,7 +189,7 @@ const createClientRoute = () => {
         client.tcpInstance.request('ad_status', { dir: __dirname },
           data => {
             resolve(data)
-          }, 1000)
+          }, 500)
       })
       .then(data => {
         if (data.busy) {
