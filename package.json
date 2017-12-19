@@ -1,6 +1,6 @@
 {
   "name": "gitlab-autodeploy",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Autodeploy utility",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MCGritti/autodeploy.git"
+    "url": "git+https://github.com/pkcgritti/autodeploy.git"
   },
   "author": "Marcos Cesar Gritti <cesargritti@gmail.com>",
   "license": "MIT",
